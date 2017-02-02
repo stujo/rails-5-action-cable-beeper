@@ -11,6 +11,7 @@
 // about supported directives.
 //
 //= require jquery
+//= require jquery-ui/effects/effect-shake
 //= require jquery_ujs
-//= require turbolinks
+//= require nano
 //= require_tree .

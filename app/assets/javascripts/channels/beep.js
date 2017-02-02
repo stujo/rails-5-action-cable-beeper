@@ -1,4 +1,6 @@
-App.room = App.cable.subscriptions.create("RoomChannel", {
+/* global App, Beeps */
+
+App.beep = App.cable.subscriptions.create('BeepChannel', {
   connected: function() {
     // Called when the subscription is ready for use on the server
   },
@@ -9,5 +11,6 @@ App.room = App.cable.subscriptions.create("RoomChannel", {
 
   received: function(data) {
     // Called when there's incoming data on the websocket for this channel
+    Beeps.beep(data);
   }
 });

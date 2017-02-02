@@ -1,0 +1,43 @@
+<%= form_tag(beep_path, remote: true) do |f| %>
+  <%= submit_tag 'Beep' %>
+<% end %>
+
+<div>
+  <h3>Beep History</h3>
+  <ul id="beeps">
+    <% if @message %>
+    <li class="message"><%= message.uuid %> : <%= message.time %></li>
+    <% end %>
+  </ul>
+</div>
+
+
+<script id="beep-template" type="text/template">
+  <li class="message">{uuid} : {time}</li>
+</script>
+
+<script>
+  (function(){
+    var $beepList = $('#beeps');
+    var template = $('#beep-template').html();
+    var maxDisplay = 5;
+    var supportsVibrate = "vibrate" in navigator;
+
+    function buzz(){
+      if(supportsVibrate){
+        navigator.vibrate([500,500,500]);
+      } else {
+        console.log('BUZZ','Vibrate not available');
+      }
+    }
+
+    function insertBeep(beep){
+      $beepList.prepend(nano(template, beep))
+      // Only Keep maxDisplay
+      $beepList.find(".message").slice(maxDisplay).remove();
+      $beepList.effect( "shake" );
+    }
+
+    Beeps.onBeep(insertBeep);
+  })();
+</script>
