@@ -26,6 +26,7 @@
 
     function buzz(){
       if(supportsVibrate){
+        console.log('BUZZ','Vibrating', navigator.vibrate);
         navigator.vibrate([500,500,500]);
       } else {
         console.log('BUZZ','Vibrate not available');
@@ -44,6 +45,7 @@
       $beepList.find(".message").slice(maxDisplay).remove();
       Materialize.toast(beep.displayMessage, 1000) // 4000 is the duration of the toast
       $beepList.effect( "shake" );
+      buzz();
     }
 
     Beeps.onBeep(insertBeep);
