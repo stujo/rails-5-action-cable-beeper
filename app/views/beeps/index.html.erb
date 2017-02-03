@@ -5,47 +5,106 @@
   </button>
 </div>
 
+<div id='map'>
+  <div class="center">
+    <button id='show-me' class="center-block btn waves-effect waves-light btn-large">Show My Location
+      <i class="material-icons right">near_me</i>
+    </button>
+  </div>
+</div>
+
 <div>
   <h3 class="center-align">Beep History</h3>
   <ul id="beeps" class="collection center-align"></ul>
 </div>
 
-
-<div id='map'></div>
-
 <script>
-
-var latLong = [-74.50, 40];
-
 mapboxgl.accessToken = '<%== ENV['MAPBOX_API_KEY'] %>';
 
-var map = new mapboxgl.Map({
-    container: 'map', // container id
-    style: 'mapbox://styles/mapbox/streets-v9', //stylesheet location
-    center: latLong, // starting position
-    zoom: 9 // starting zoom
-});
+$(document).ready(addFindMeListener);
 
-map.on('load', function () {
-    // Add a source and layer displaying a point which will be animated in a circle.
-    map.addSource('point', {
-        "type": "geojson",
-        "data": {
-            "type": "Point",
-            "coordinates": latLong
-        }
+function addFindMeListener(){
+  $('#show-me').click(initializeMap);
+}
+
+function initializeMap(){
+  $('#map').html('');
+  if ("geolocation" in navigator) {
+    /* geolocation is available */
+    navigator.geolocation.getCurrentPosition(function(position) {
+      console.log("POSITION", position);
+      showMap([position.coords.longitude, position.coords.latitude]);
     });
+  } else {
+    /* geolocation IS NOT available */
+    showMap([-74.50, 40]);
+  }
+}
 
+function showMap(latLong){
+  var map = new mapboxgl.Map({
+      container: 'map', // container id
+      style: 'mapbox://styles/mapbox/streets-v9', //stylesheet location
+      center: latLong, // starting position
+      zoom: 9 // starting zoom
+  });
+
+  map.on('load', function () {
+    // Add a layer showing the places.
     map.addLayer({
-        "id": "point",
-        "source": "point",
-        "type": "circle",
-        "paint": {
-            "circle-radius": 10,
-            "circle-color": "#007cbf"
+        "id": "places",
+        "type": "symbol",
+        "source": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [{
+                    "type": "Feature",
+                    "properties": {
+                        "description": "You are Here!",
+                        "icon": "star" // https://github.com/mapbox/mapbox-gl-styles
+                    },
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": latLong
+                    }
+                }]
+            }
+        },
+        "layout": {
+            "icon-image": "{icon}-15",
+            "icon-allow-overlap": true
         }
     });
-});
+
+
+    // When a click event occurs near a place, open a popup at the location of
+    // the feature, with description HTML from its properties.
+    map.on('click', function (e) {
+        var features = map.queryRenderedFeatures(e.point, { layers: ['places'] });
+
+        if (!features.length) {
+            return;
+        }
+
+        var feature = features[0];
+
+        // Populate the popup and set its coordinates
+        // based on the feature found.
+        new mapboxgl.Popup()
+            .setLngLat(feature.geometry.coordinates)
+            .setHTML('<div class="popup-description">' + feature.properties.description + '</div>')
+            .addTo(map);
+    });
+
+    // Use the same approach as above to indicate that the symbols are clickable
+    // by changing the cursor style to 'pointer'.
+    map.on('mousemove', function (e) {
+        var features = map.queryRenderedFeatures(e.point, { layers: ['places'] });
+        map.getCanvas().style.cursor = (features.length) ? 'pointer' : '';
+    });
+  });
+}
 
 </script>
 
