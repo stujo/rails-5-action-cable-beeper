@@ -14,18 +14,45 @@
 <div id='map'></div>
 
 <script>
+
+var latLong = [-74.50, 40];
+
 mapboxgl.accessToken = '<%== ENV['MAPBOX_API_KEY'] %>';
+
 var map = new mapboxgl.Map({
     container: 'map', // container id
     style: 'mapbox://styles/mapbox/streets-v9', //stylesheet location
-    center: [-74.50, 40], // starting position
+    center: latLong, // starting position
     zoom: 9 // starting zoom
 });
+
+map.on('load', function () {
+    // Add a source and layer displaying a point which will be animated in a circle.
+    map.addSource('point', {
+        "type": "geojson",
+        "data": {
+            "type": "Point",
+            "coordinates": latLong
+        }
+    });
+
+    map.addLayer({
+        "id": "point",
+        "source": "point",
+        "type": "circle",
+        "paint": {
+            "circle-radius": 10,
+            "circle-color": "#007cbf"
+        }
+    });
+});
+
 </script>
 
 <script id="beep-template" type="text/template">
   <li id="msg-{uuid}" class="collection-item message">{displayMessage}</li>
 </script>
+
 
 <script>
   (function(){
