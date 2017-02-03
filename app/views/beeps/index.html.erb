@@ -1,27 +1,28 @@
-<%= form_tag(beep_path, remote: true) do |f| %>
-  <%= submit_tag 'Beep' %>
-<% end %>
+
+<div id="beeper-container" class="valign-wrapper">
+  <button id='beeper' class="valign center-block btn waves-effect waves-light btn-large">Beep
+    <i class="material-icons right">send</i>
+  </button>
+</div>
 
 <div>
-  <h3>Beep History</h3>
-  <ul id="beeps">
-    <% if @message %>
-    <li class="message"><%= message.uuid %> : <%= message.time %></li>
-    <% end %>
-  </ul>
+  <h3 class="center-align">Beep History</h3>
+  <ul id="beeps" class="collection center-align"></ul>
 </div>
 
 
 <script id="beep-template" type="text/template">
-  <li class="message">{uuid} : {time}</li>
+  <li id="msg-{uuid}" class="collection-item message">{displayMessage}</li>
 </script>
 
 <script>
   (function(){
     var $beepList = $('#beeps');
+    var $beeper = $('#beeper');
     var template = $('#beep-template').html();
     var maxDisplay = 5;
     var supportsVibrate = "vibrate" in navigator;
+    var beepPath = "<%= beep_path %>";
 
     function buzz(){
       if(supportsVibrate){
@@ -31,13 +32,29 @@
       }
     }
 
+    function formatBeep(beep){
+      var d = new Date(beep.time);
+      return d.toString();
+    }
+
     function insertBeep(beep){
+      beep.displayMessage = formatBeep(beep);
       $beepList.prepend(nano(template, beep))
       // Only Keep maxDisplay
       $beepList.find(".message").slice(maxDisplay).remove();
+      Materialize.toast(beep.displayMessage, 1000) // 4000 is the duration of the toast
       $beepList.effect( "shake" );
     }
 
     Beeps.onBeep(insertBeep);
+
+    $beeper.click(function(event){
+      event.preventDefault();
+      $beeper.prop("disabled","disabled");
+      var promise = $.post(beepPath);
+      promise.done(function(){
+        $beeper.prop("disabled",false);
+      });
+    });
   })();
 </script>

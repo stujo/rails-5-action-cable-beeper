@@ -14,4 +14,5 @@
 //= require jquery-ui/effects/effect-shake
 //= require jquery_ujs
 //= require nano
+//= require materialize
 //= require_tree .
